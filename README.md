@@ -15,3 +15,4 @@ This project is an RAG (Retrieval Augmented Genration) implementation to mangage
 - langchain
 - chromadb
 - docling
+- fastapi
