@@ -14,7 +14,7 @@ class Ingester:
         self.vector_store= Chroma(
             collection_name="documents_collection",
             embedding_function=self.embedding_model,
-            persist_directory="./docs/chroma_db"
+            persist_directory="./db/chroma_db"
         )
 
         self.converter= DocumentConverter()

@@ -2,7 +2,7 @@
 .venv/
 
 # docs folder
-docs/
+db/
 
 # test folder
 test/
