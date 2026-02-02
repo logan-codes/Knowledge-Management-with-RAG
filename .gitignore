@@ -12,3 +12,6 @@ test/
 
 # github files
 .github/
+
+# env file
+.env
