@@ -1,3 +1,14 @@
 # python venv
-./.venv/
+.venv/
 
+# docs folder
+docs/
+
+# test folder
+test/
+
+# pycache files
+**/__pycache__/
+
+# github files
+.github/
