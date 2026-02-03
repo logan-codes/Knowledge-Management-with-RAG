@@ -18,7 +18,7 @@ This project is an RAG (Retrieval Augmented Genration) implementation to mangage
 - Fastapi
 
 # Project Structure
-
+```
 └── 📁db
         └── 📁chroma_db
         └── 📁uploads
@@ -36,3 +36,4 @@ This project is an RAG (Retrieval Augmented Genration) implementation to mangage
 ├── main.py
 ├── README.md
 └── requirements.txt
+```
