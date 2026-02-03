@@ -1,6 +1,8 @@
 from langchain_chroma.vectorstores import Chroma
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
-from google import genai
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from dotenv import load_dotenv
 import os
 import asyncio
@@ -24,21 +26,27 @@ class retriever:
         retrieved_chunks = self.vector_store.similarity_search(query,k=5)
         return retrieved_chunks
     
-    async def query_transformer(self,query:str):
-        gemini_client= genai.Client(api_key=self.GEMINI_API_KEY)
-        prompt=f"Split this question into smaller parts: {query}"
-        chat= gemini_client.aio.chats.create(model="gemini-2.5-flash")
-        response= await chat.send_message(prompt)
-        gemini_client.close()
-        return response.text
+    def query_transformer(self,query:str):
+        template= """You are an AI language model assistant. Your task is to generate five 
+different versions of the given user question to retrieve relevant documents from a vector 
+database. By generating multiple perspectives on the user question, your goal is to help
+the user overcome some of the limitations of the distance-based similarity search. 
+Provide these alternative questions separated by newlines. Original question: {question}"""
+        prompt = ChatPromptTemplate.from_template(template)
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash",temperature=0.7)
+        chain= (prompt 
+                | llm
+                | StrOutputParser()
+                | (lambda x: x.strip().split("\n"))  # Split the output into a list of questions
+        )
+        response= chain.invoke({"question": query})
+        return response
 
 
-async def main():
+
+if __name__ == "__main__":
     retriever_instance = retriever()
     # results = retriever_instance.retrieve_chunks("Sample query")
     # print(results)
-    transformed_response = await retriever_instance.query_transformer("Sample query")
+    transformed_response = retriever_instance.query_transformer("tell me about the history of AI and its applications in healthcare and finance")
     print(transformed_response)
-
-if __name__ == "__main__":
-    asyncio.run(main())
