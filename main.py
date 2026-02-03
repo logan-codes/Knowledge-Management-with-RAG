@@ -3,10 +3,11 @@ import shutil
 from services.document_ingester import Ingester
 from services.retriever import Retriever
 from services.generation import Generation
+from pydantic import BaseModel
 
 app = FastAPI()
 
-@app.get("/health")
+@app.get("/")
 async def health_check():
     return {"status": "ok"}
 
@@ -21,13 +22,16 @@ async def upload_file(file:UploadFile=File(...)):
     ingester.ingest_documents(file_path)
     return {"filename": file.filename, "message": "File uploaded and ingested successfully."}
 
+class ChatRequest(BaseModel):
+    question: str
+
 @app.post("/chat")
-async def chat_endpoint(question: str):
+async def chat_endpoint(request: ChatRequest):
 
     retriever = Retriever()
     generator = Generation()
 
-    context = retriever.retrieve_context(question)
-    response = generator.generate_response(question, context)
+    context = retriever.retrieve_context(request.question)
+    response = generator.generate_response(request.question, context)
 
     return {"response": response}
