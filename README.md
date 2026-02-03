@@ -11,8 +11,25 @@ This project is an RAG (Retrieval Augmented Genration) implementation to mangage
 
 # Tech stack
 
-- streamlit
-- langchain
-- chromadb
-- docling
-- fastapi
+- Streamlit
+- Langchain
+- Chromadb
+- Docling
+- Fastapi
+
+# Project Structure
+
+└── 📁db
+        └── 📁chroma_db
+        └── 📁uploads
+└── 📁services
+    ├── document_ingester.py
+    ├── generation.py
+    ├── retriever.py
+└── 📁streamlit
+    ├── homepage.py
+├── .env
+├── .gitignore
+├── main.py
+├── README.md
+└── requirements.txt
