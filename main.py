@@ -4,6 +4,7 @@ from services.document_ingester import Ingester
 from services.retriever import Retriever
 from services.generation import Generation
 from pydantic import BaseModel
+import os
 
 app = FastAPI()
 
@@ -13,6 +14,8 @@ async def health_check():
 
 @app.post("/upload")
 async def upload_file(file:UploadFile=File(...)):
+    os.makedirs("db/uploads", exist_ok=True)
+
     file_path = f"db/uploads/{file.filename}"
 
     with open(file_path, "wb") as buffer:

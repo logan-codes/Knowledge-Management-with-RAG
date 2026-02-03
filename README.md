@@ -27,7 +27,10 @@ This project is an RAG (Retrieval Augmented Genration) implementation to mangage
     ├── generation.py
     ├── retriever.py
 └── 📁streamlit
-    ├── homepage.py
+    └── 📁pages
+        ├── Chat.py
+        ├── Documents.py
+    └── Home.py
 ├── .env
 ├── .gitignore
 ├── main.py
