@@ -1,6 +1,8 @@
 from fastapi import FastAPI, UploadFile, File
 import shutil
 from services.document_ingester import Ingester
+from services.retriever import Retriever
+from services.generation import Generation
 
 app = FastAPI()
 
@@ -18,3 +20,14 @@ async def upload_file(file:UploadFile=File(...)):
     ingester= Ingester()
     ingester.ingest_documents(file_path)
     return {"filename": file.filename, "message": "File uploaded and ingested successfully."}
+
+@app.post("/chat")
+async def chat_endpoint(question: str):
+
+    retriever = Retriever()
+    generator = Generation()
+
+    context = retriever.retrieve_context(question)
+    response = generator.generate_response(question, context)
+
+    return {"response": response}
