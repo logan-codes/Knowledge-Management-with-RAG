@@ -27,8 +27,6 @@ if prompt := st.chat_input("Type your message..."):
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    response = f"You said: {prompt}"
-
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
             res = requests.post(
@@ -36,11 +34,13 @@ if prompt := st.chat_input("Type your message..."):
                 json={"question": prompt},
                 timeout=30
             )
-
             if res.status_code == 200:
                 reply = res.json()["response"]
             else:
                 reply = "⚠️ Backend error"
 
+            st.session_state.messages.append(
+                {"role": "assistant", "content": reply}
+            )
             st.markdown(reply)
 
