@@ -46,10 +46,11 @@ Provide these alternative questions separated by newlines. Original question: {q
         all_retrieved_chunks = []
         for tq in transformed_queries:
             chunks = self._retrieve_chunks(tq)
-            all_retrieved_chunks.extend(chunks)
+            if chunks not in all_retrieved_chunks:
+                all_retrieved_chunks.extend(chunks)
         context=""
         for idx, doc in enumerate(all_retrieved_chunks):
-            context+=(f"Document {idx+1}:\n{doc.page_content}\n{'-'*50}")
+            context+=(f"Context {idx+1}:\n{doc.page_content}\n{'-'*50}")
         return context
 
 if __name__ == "__main__":
