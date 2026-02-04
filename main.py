@@ -12,7 +12,7 @@ app = FastAPI()
 async def health_check():
     return {"status": "ok"}
 
-@app.post("/upload")
+@app.post("/document")
 async def upload_file(file:UploadFile=File(...)):
     os.makedirs("db/uploads", exist_ok=True)
 
@@ -24,6 +24,21 @@ async def upload_file(file:UploadFile=File(...)):
     ingester= Ingester()
     ingester.ingest_documents(file_path)
     return {"filename": file.filename, "message": "File uploaded and ingested successfully."}
+
+@app.get("/documents")
+def list_documents():
+    ingester = Ingester()
+    documents = ingester.list_documents()
+    return {"documents": documents}
+
+class DeleteRequest(BaseModel):
+    source: str
+
+@app.delete("/document")
+def clear_document(payload: DeleteRequest):
+    ingester = Ingester()
+    message = ingester.delete_document(payload.source)
+    return {"message": message}
 
 class ChatRequest(BaseModel):
     question: str
