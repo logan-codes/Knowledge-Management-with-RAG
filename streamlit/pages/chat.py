@@ -31,8 +31,7 @@ if prompt := st.chat_input("Type your message..."):
         with st.spinner("Thinking..."):
             res = requests.post(
                 API_URL+"chat",
-                json={"question": prompt},
-                timeout=30
+                json={"question": prompt}
             )
             if res.status_code == 200:
                 reply = res.json()["response"]

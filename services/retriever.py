@@ -32,7 +32,7 @@ database. By generating multiple perspectives on the user question, your goal is
 the user overcome some of the limitations of the distance-based similarity search. 
 Provide these alternative questions separated by newlines. Original question: {question}"""
         prompt = ChatPromptTemplate.from_template(template)
-        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash",temperature=0.7)
+        llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite",temperature=0.7)
         chain= (prompt 
                 | llm
                 | StrOutputParser()
