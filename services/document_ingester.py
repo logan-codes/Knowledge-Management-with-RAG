@@ -47,8 +47,8 @@ class Ingester:
 
 if __name__ == "__main__":
     ingester = Ingester()
-    # ingester.ingest_documents("E:/Coding/AIMl/Rag/docs/test_doc/sample.pdf")
-    # print("Document ingestion completed.")
-    ingester.clear_document()
-    print("Cleared documents from the vector store.")
-    print(ingester.list_chunks())
+    ingester.ingest_documents("E:/Coding/AIMl/Rag/db/test_doc/sample.pdf")
+    print("Document ingestion completed.")
+    # ingester.clear_document()
+    # print("Cleared documents from the vector store.")
+    # print(ingester.list_chunks())
