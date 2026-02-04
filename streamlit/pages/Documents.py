@@ -17,7 +17,7 @@ def fetch_documents():
         if res.status_code == 200:
             return res.json().get("documents", [])
     except Exception:
-        pass
+        st.error("Failed to fetch documents from the server.")
     return []
 
 def upload_document(file):
