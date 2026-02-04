@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Depends
 from functools import lru_cache 
+from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 import shutil
 from services.document_ingester import Ingester
 from services.retriever import Retriever
@@ -9,12 +10,13 @@ import os
 
 app = FastAPI()
 
+embed_model = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 @lru_cache()
 def get_ingester():
-    return Ingester()
+    return Ingester(embedding_model=embed_model)
 @lru_cache()
 def get_retriever():
-    return Retriever()
+    return Retriever(embedding_model=embed_model)
 @lru_cache()
 def get_generator():
     return Generation()
@@ -25,9 +27,9 @@ async def health_check():
 
 @app.post("/document")
 async def upload_file(file:UploadFile=File(...), ingester: Ingester = Depends(get_ingester)):
-    os.makedirs("db/uploads", exist_ok=True)
+    os.makedirs("data/uploads", exist_ok=True)
 
-    file_path = f"db/uploads/{file.filename}"
+    file_path = f"data/uploads/{file.filename}"
 
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)

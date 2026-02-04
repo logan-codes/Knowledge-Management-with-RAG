@@ -7,15 +7,15 @@ from pathlib import Path
 import os
 
 class Ingester:
-    def __init__(self):
-        self.embedding_model= HuggingFaceEmbeddings(
+    def __init__(self, embedding_model:HuggingFaceEmbeddings=None):
+        self.embedding_model= embedding_model if embedding_model else HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2"
         )
 
         self.vector_store= Chroma(
             collection_name="documents_collection",
             embedding_function=self.embedding_model,
-            persist_directory="./db/chroma_db"
+            persist_directory="data/chroma_db"
         )
 
         self.converter= DocumentConverter()
@@ -29,12 +29,15 @@ class Ingester:
         self.vector_store.add_documents(documents=lc_docs)
     
     def list_documents(self):
-        all_docs = Path("./db/uploads").glob("*")
+        all_docs = Path("data/uploads").glob("*")
         return [doc.name for doc in all_docs]
     
     def delete_document(self,source: str):
-        source_path = Path(f"./db/uploads/{source}")
-        os.remove(source_path)
+        source_path = Path(f"data/uploads/{source}")
+        try:
+            os.remove(source_path)
+        except FileNotFoundError:
+            pass  # If the file does not exist, we can ignore the error
         self.vector_store.delete(where={"source":source})
         return f"Documents from source '{source}' have been cleared from the vector store."
     
@@ -47,8 +50,10 @@ class Ingester:
 
 if __name__ == "__main__":
     ingester = Ingester()
-    ingester.ingest_documents("E:/Coding/AIMl/Rag/db/test_doc/sample.pdf")
+    ingester.ingest_documents("E:/Coding/AIMl/Rag/data/test_doc/sample.pdf")
     print("Document ingestion completed.")
+    # ingester.delete_document("sample.pdf")
+    # print("Deleted document and its chunks from the vector store.")
     # ingester.clear_document()
     # print("Cleared documents from the vector store.")
     # print(ingester.list_chunks())

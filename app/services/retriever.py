@@ -7,13 +7,14 @@ from dotenv import load_dotenv
 import os
 
 class Retriever:
-    def __init__(self):
-        self.embed=HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-        
+    def __init__(self, embedding_model:HuggingFaceEmbeddings=None):
+        self.embed= embedding_model if embedding_model else HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2"
+        )
         self.vector_store=Chroma(
             collection_name="documents_collection",
             embedding_function=self.embed,
-            persist_directory="./db/chroma_db"
+            persist_directory="data/chroma_db"
         )
 
         load_dotenv()
