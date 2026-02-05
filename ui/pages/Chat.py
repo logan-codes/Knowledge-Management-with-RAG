@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import os
+import json
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -31,7 +32,7 @@ if prompt := st.chat_input("Type your message..."):
         with st.spinner("Thinking..."):
             res = requests.post(
                 API_URL+"chat",
-                json={"question": prompt}
+                json={"question": prompt, "history": json.dumps(st.session_state.messages)}
             )
             if res.status_code == 200:
                 reply = res.json()["response"]

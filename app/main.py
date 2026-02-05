@@ -51,11 +51,12 @@ def clear_document(payload: DeleteRequest,ingester: Ingester = Depends(get_inges
 
 class ChatRequest(BaseModel):
     question: str
+    history: str
 
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest, retriever: Retriever = Depends(get_retriever), generator: Generation = Depends(get_generator)):
 
     context = retriever.retrieve_context(request.question)
-    response = generator.generate_response(request.question, context)
+    response = generator.generate_response(request.question, context, request.history)
 
     return {"response": response}

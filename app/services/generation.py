@@ -10,17 +10,18 @@ class Generation:
         self.GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
         self.llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.7)
 
-    def generate_response(self, prompt: str, content:str) -> str:
+    def generate_response(self, prompt: str, content:str, history:str) -> str:
         template="""Answer the following question based on this context:
 {context}
 Question: {question}
+History: {history}
 """
         prompt_template = ChatPromptTemplate.from_template(template)
         chain = (prompt_template
                  | self.llm
                  | StrOutputParser()
         )
-        response = chain.invoke({"context": content, "question": prompt})
+        response = chain.invoke({"context": content, "question": prompt, "history": history})
         return response
     
 
