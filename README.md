@@ -1,4 +1,4 @@
-# 🧠 Personal Knowledge Management RAG System
+# 🧠 Knowledge Management RAG System
 
 A powerful, local-first Retrieval-Augmented Generation (RAG) system designed to manage your personal knowledge base. Built with a modern client-server architecture, it allows you to upload documents, persist them in a vector database, and chat with your data using Google's Gemini models.
 
@@ -13,7 +13,7 @@ A powerful, local-first Retrieval-Augmented Generation (RAG) system designed to 
 -   **🤖 Advanced Parsing**: Powered by [Docling](https://github.com/DS4SD/docling) for high-fidelity document parsing and chunking.
 -   **🧠 Smart Retrieval**: Uses `sentence-transformers/all-MiniLM-L6-v2` embeddings stored in a local ChromaDB instance.
 -   **💬 Context-Aware Chat**: Chat interface powered by Google Gemini 2.5 Flash Lite.
--   ** STORAGE**: Uses ChromaDB for vector storage and **SQLite** for state management.
+-   **STORAGE**: Uses ChromaDB for vector storage and **SQLite** for state management.
 -   **⚡ High Performance**: Optimized architecture with model caching (LRU) to prevent redundant reloading.
 -   **🧹 Management**: View and delete uploaded documents directly from the UI.
 
