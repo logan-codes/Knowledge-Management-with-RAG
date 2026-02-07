@@ -22,10 +22,20 @@ def fetch_documents():
 
 def upload_document(file):
     files = {"file": (file.name, file.getvalue(), file.type)}
-    return requests.post(API_URL + "document", files=files)
+    try:
+        res=requests.post(API_URL + "document", files=files)
+    except requests.exceptions.RequestException:
+        st.error("⚠️ Could not connect to the backend. Please try again later.")
+        return None
+    return res
 
 def delete_document(name):
-    return requests.delete(API_URL + f"document", json={"source": name})
+    try:
+        res=requests.delete(API_URL + f"document", json={"source": name})
+    except requests.exceptions.RequestException:
+        st.error("⚠️ Could not connect to the backend. Please try again later.")
+        return None
+    return res
 
 st.subheader("📤 Upload Document")
 
@@ -39,7 +49,9 @@ if uploaded_file:
         with st.spinner("Uploading and ingesting document..."):
             res = upload_document(uploaded_file)
 
-            if res.status_code == 200:
+            if res is None:
+                pass  # Error already shown by upload_document
+            elif res.status_code == 200:
                 st.success("✅ Document uploaded successfully")
             else:
                 st.error("❌ Failed to upload document")

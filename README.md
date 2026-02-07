@@ -1,4 +1,4 @@
-# 🧠 Knowledge Management RAG System
+# 🧠 Personal Knowledge Management RAG System
 
 A powerful, local-first Retrieval-Augmented Generation (RAG) system designed to manage your personal knowledge base. Built with a modern client-server architecture, it allows you to upload documents, persist them in a vector database, and chat with your data using Google's Gemini models.
 

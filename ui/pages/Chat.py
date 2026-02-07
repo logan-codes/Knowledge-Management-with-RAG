@@ -30,14 +30,23 @@ if prompt := st.chat_input("Type your message..."):
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            res = requests.post(
-                API_URL+"chat",
-                json={"question": prompt, "history": json.dumps(st.session_state.messages)}
-            )
+            res = None
+            try:
+                res = requests.post(
+                    API_URL+"chat",
+                    json={"question": prompt, "history": json.dumps(st.session_state.messages)}
+                )
+            except requests.exceptions.RequestException:
+                st.error("⚠️ Could not connect to the backend. Please try again later.")
+                st.stop()
+
+            if res is None:
+                st.stop()
+            
             if res.status_code == 200:
                 reply = res.json()["response"]
             else:
-                reply = "⚠️ Backend error"
+                reply = "Sorry, something went wrong. Please try again later."
 
             st.session_state.messages.append(
                 {"role": "assistant", "content": reply}
