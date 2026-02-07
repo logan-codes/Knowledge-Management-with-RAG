@@ -1,7 +1,7 @@
 import streamlit as st
-import streamlit_shadcn_ui as ui
 import requests
 import os
+import pandas as pd
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -60,29 +60,52 @@ st.divider()
 
 st.subheader("📄 Available Documents")
 
+search_query = st.text_input(   
+    "",
+    placeholder="🔍 Search documents"
+)
+
 with st.spinner("Fetching documents..."):
     documents = fetch_documents()
 
+if search_query:
+    documents = [
+        doc for doc in documents
+        if search_query.lower() in doc[0].lower()
+    ]
 if not documents:
     st.info("No documents available.")
 else:
-    for doc in documents:
-        col1, col2 = st.columns([5, 1])
+    # Table header
+    header_cols = st.columns([3, 2, 2, 1])
+    header_cols[0].markdown("**Filename**")
+    header_cols[1].markdown("**Status**")
+    header_cols[2].markdown("**Uploaded At**")
+    header_cols[3].markdown("**Actions**")
 
-        with col1:
-            st.write(f"📄 **{doc}**")
+    st.divider()
 
-        with col2:
-            if st.button(
-                "❌ Delete",
-                key=f"delete_{doc}",
-                type="tertiary",
-            ):
-                with st.spinner("Deleting document..."):
-                    res = delete_document(doc)
+    for idx, doc in enumerate(documents):
+        filename, status, timestamp, path = doc
 
-                    if res.status_code == 200:
-                        st.success(f"✅ {doc} deleted")
-                        st.rerun()
-                    else:
-                        st.error("❌ Failed to delete document")
+        cols = st.columns([3, 2, 2, 1])
+
+        cols[0].write(filename)
+        cols[1].write(status)
+        cols[2].write(timestamp)
+
+        if cols[3].button(
+            "Delete",
+            key=f"delete_{idx}",
+            type="secondary"
+        ):
+            with st.spinner("Deleting document..."):
+                res = delete_document(path)
+
+                if res is None:
+                    pass
+                elif res.status_code == 200:
+                    st.success(f"✅ Deleted `{filename}`")
+                    st.rerun()
+                else:
+                    st.error("❌ Failed to delete document")

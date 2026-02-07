@@ -1,13 +1,16 @@
-from fastapi import FastAPI, UploadFile, Request, HTTPException, File, Depends
+from fastapi import FastAPI, UploadFile, Request, HTTPException,BackgroundTasks, File, Depends
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 from functools import lru_cache 
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 import shutil
 from services.document_ingester import Ingester
 from services.retriever import Retriever
 from services.generation import Generation
+from services.database import Database
 from pydantic import BaseModel
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
 import os
 import time
 import logging
@@ -34,9 +37,21 @@ logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
 handler.setFormatter(JSONFormatter())
 logger.addHandler(handler)
+#--- Lifecycle Management ---
+database = Database()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Starting up the application...")
+    logger.info("Database connection established.")
+    load_dotenv()
+    ingest_uploaded_docs()
+    yield
+    database.disconnect()
+    logger.info("Database connection closed. Application shutdown complete.")
+    logger.info("Application has been stopped.")
 
 # --- FastAPI App ---
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 # --- Middleware for Request Logging ---
 @app.middleware("http")
@@ -78,8 +93,21 @@ def get_retriever():
 def get_generator():
     return Generation()
 
-# --- Background Task ---
+# --- Background Tasks ---
+def ingest_documents(path:str):
+    ingester=get_ingester()
+    logger.info(f"Starting document ingestion for {path}", extra={"extra": {"document_path": path}})
+    ingester.ingest_documents(path)
+    logger.info(f"Document ingestion completed for {path}", extra={"extra": {"document_path": path}})
+    database.update_document_status(path, "ingested")
+    logger.info(f"Document status updated to 'ingested' for {path}", extra={"extra": {"document_path": path}})
 
+def ingest_uploaded_docs():
+    to_be_ingested = database.list_documents()
+    for doc in to_be_ingested:
+        if doc[1] == "uploaded":
+            ingest_documents(doc[3])
+            logger.info(f"Background ingestion completed for {doc[3]}", extra={"extra": {"document_path": doc[3]}})
 
 # --- API Endpoints ---
 @app.get("/")
@@ -87,35 +115,37 @@ async def health_check():
     return {"status": "ok"}
 
 @app.post("/document")
-async def upload_file(file:UploadFile=File(...), ingester: Ingester = Depends(get_ingester)):
-    upload_dir = os.path.join("DATA_DIR", "uploads")
+async def upload_file(background_tasks: BackgroundTasks,file:UploadFile=File(...) ):
+    upload_dir = os.path.join(os.getenv("DATA_DIR"), "uploads")
     os.makedirs(upload_dir, exist_ok=True)
 
     safe_filename = secure_filename(file.filename)
     file_path = os.path.join(upload_dir, f"{os.path.splitext(safe_filename)[0]}_{int(time.time())}{os.path.splitext(safe_filename)[1]}")
 
-    logger.info(f"Uploading file: {file.filename}", extra={"extra": {"original_filename": file.filename, "safe_path": file_path}})
-
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    
-    ingester.ingest_documents(file_path)
-    logger.info(f"Ingestion complete: {file_path}")
-    return {"filename": file.filename, "message": "File uploaded and ingested successfully."}
+    database.add_document(filename=safe_filename, path=file_path)
+    logger.info(f"Uploading file: {file.filename}", extra={"extra": {"original_filename": file.filename, "safe_path": file_path}})
+    background_tasks.add_task(ingest_documents, path=file_path)
+    return {"filename": file.filename, "message": "File uploaded successfully."}
 
 @app.get("/documents")
-def list_documents(ingester: Ingester = Depends(get_ingester)):
-    documents = ingester.list_documents()
+def list_documents():
+    documents = database.list_documents()
+    logger.info("Fetched document list", extra={"extra": {"document_count": len(documents)}})
     return {"documents": documents}
 
 class DeleteRequest(BaseModel):
     source: str
 
 @app.delete("/document")
-def clear_document(payload: DeleteRequest,ingester: Ingester = Depends(get_ingester)):
+def clear_document(payload: DeleteRequest, ingester: Ingester = Depends(get_ingester)):
     logger.info(f"Deleting document: {payload.source}")
     message = ingester.delete_document(payload.source)
-    return {"message": message}
+    logger.info(f"Vector deletion completed for: {payload.source,message}")
+    db_msg=database.delete_document(payload.source)
+    logger.info(f"Document deletion completed for: {payload.source}")
+    return {"message": message, "db_msg": db_msg}
 
 class ChatRequest(BaseModel):
     question: str
