@@ -74,9 +74,10 @@ with st.expander("🛠️ Under the Hood"):
     This project is built with a modern, robust tech stack:
     - **Backend**: FastAPI (Python)
     - **Frontend**: Streamlit
-    - **LLM**: Google Gemini 1.5 Flash
+    - **LLM**: Google Gemini 2.5 Flash Lite
     - **Embeddings**: HuggingFace (`sentence-transformers`)
-    - **Vector Store**: ChromaDB / SQLite
+    - **Vector Store**: ChromaDB (local)
+    - **State Management**: SQLite
     - **Parsing**: Docling
     """)
 

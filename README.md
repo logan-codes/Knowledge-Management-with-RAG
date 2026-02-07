@@ -12,7 +12,8 @@ A powerful, local-first Retrieval-Augmented Generation (RAG) system designed to 
 -   **📄 Document Ingestion**: Seamlessly upload PDF, DOCX, and TXT files.
 -   **🤖 Advanced Parsing**: Powered by [Docling](https://github.com/DS4SD/docling) for high-fidelity document parsing and chunking.
 -   **🧠 Smart Retrieval**: Uses `sentence-transformers/all-MiniLM-L6-v2` embeddings stored in a local ChromaDB instance.
--   **💬 Context-Aware Chat**: Chat interface powered by Google Gemini 2.5 Flash Lite for fast, accurate responses based on your data.
+-   **💬 Context-Aware Chat**: Chat interface powered by Google Gemini 2.5 Flash Lite.
+-   ** STORAGE**: Uses ChromaDB for vector storage and **SQLite** for state management.
 -   **⚡ High Performance**: Optimized architecture with model caching (LRU) to prevent redundant reloading.
 -   **🧹 Management**: View and delete uploaded documents directly from the UI.
 
@@ -33,6 +34,7 @@ The project follows a clean segregation of duties:
 │   └── 📁 pages/           # Chat & Document Management Modules
 ├── 📁 data/                # Persistent Storage
 │   ├── 📁 chroma_db/       # Vector Database
+│   ├── 📁 sqlite_db/       # State Management (Metadata)
 │   └── 📁 uploads/         # Raw Files
 └── requirements.txt        # Dependencies
 ```
@@ -71,6 +73,7 @@ The project follows a clean segregation of duties:
     ```env
     GOOGLE_API_KEY=your_google_api_key_here
     API_URL=http://localhost:8000/
+    DATA_DIR=data/
     ```
 
 ### Running the Application
