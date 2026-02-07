@@ -11,13 +11,14 @@ class Retriever:
         self.embed= embedding_model if embedding_model else HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2"
         )
+        load_dotenv()
+        self.DATA_DIR = os.getenv("DATA_DIR")
         self.vector_store=Chroma(
             collection_name="documents_collection",
             embedding_function=self.embed,
-            persist_directory="data/chroma_db"
+            persist_directory=os.path.join(self.DATA_DIR,"chroma_db")
         )
 
-        load_dotenv()
         self.GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
         if self.GEMINI_API_KEY is None:
             raise ValueError("GOOGLE_API_KEY not found in environment variables.")

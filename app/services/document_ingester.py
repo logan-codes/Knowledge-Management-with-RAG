@@ -4,6 +4,7 @@ from langchain_core.documents import Document
 from docling.chunking import HybridChunker
 from docling.document_converter import DocumentConverter
 from pathlib import Path
+from dotenv import load_dotenv
 import os
 
 class Ingester:
@@ -11,11 +12,12 @@ class Ingester:
         self.embedding_model= embedding_model if embedding_model else HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2"
         )
-
+        load_dotenv()
+        self.DATA_DIR = os.getenv("DATA_DIR")
         self.vector_store= Chroma(
             collection_name="documents_collection",
             embedding_function=self.embedding_model,
-            persist_directory="data/chroma_db"
+            persist_directory=os.path.join(self.DATA_DIR,"chroma_db")
         )
 
         self.converter= DocumentConverter()
@@ -29,11 +31,12 @@ class Ingester:
         self.vector_store.add_documents(documents=lc_docs)
     
     def list_documents(self):
-        all_docs = Path("data/uploads").glob("*")
+        upload_dir = Path(os.path.join(self.DATA_DIR, "uploads"))
+        all_docs = upload_dir.glob("*")
         return [doc.name for doc in all_docs]
     
     def delete_document(self,source: str):
-        source_path = Path(f"data/uploads/{source}")
+        source_path = Path(f"{os.getenv("DATA_DIR")}uploads/{source}")
         try:
             os.remove(source_path)
         except FileNotFoundError:

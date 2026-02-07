@@ -78,6 +78,9 @@ def get_retriever():
 def get_generator():
     return Generation()
 
+# --- Background Task ---
+
+
 # --- API Endpoints ---
 @app.get("/")
 async def health_check():
@@ -85,10 +88,11 @@ async def health_check():
 
 @app.post("/document")
 async def upload_file(file:UploadFile=File(...), ingester: Ingester = Depends(get_ingester)):
-    os.makedirs("data/uploads", exist_ok=True)
+    upload_dir = os.path.join("DATA_DIR", "uploads")
+    os.makedirs(upload_dir, exist_ok=True)
 
     safe_filename = secure_filename(file.filename)
-    file_path = os.path.join("data/uploads", f"{os.path.splitext(safe_filename)[0]}_{int(time.time())}{os.path.splitext(safe_filename)[1]}")
+    file_path = os.path.join(upload_dir, f"{os.path.splitext(safe_filename)[0]}_{int(time.time())}{os.path.splitext(safe_filename)[1]}")
 
     logger.info(f"Uploading file: {file.filename}", extra={"extra": {"original_filename": file.filename, "safe_path": file_path}})
 
