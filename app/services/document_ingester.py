@@ -39,9 +39,26 @@ class Ingester:
         except FileNotFoundError:
             self.logger.warning(f"File {source_path} not found for deletion.")
             pass  # If the file does not exist, we can ignore the error
-        self.vector_store.delete(where={"source":source})
+        # Attempt to delete by the given source value and also by the resolved absolute path.
+        deleted_any = False
+        try:
+            self.vector_store.delete(where={"source": source})
+            deleted_any = True
+        except Exception as e:
+            self.logger.debug(f"Vector delete by provided source failed: {e}")
 
-        return f"Documents from source '{source}' have been cleared from the vector store."
+        try:
+            abs_source = str(source_path.resolve())
+            # If abs_source equals the original, this will just repeat; that's fine.
+            self.vector_store.delete(where={"source": abs_source})
+            deleted_any = True
+        except Exception as e:
+            self.logger.debug(f"Vector delete by absolute source failed: {e}")
+
+        if not deleted_any:
+            self.logger.warning(f"No vector entries deleted for source '{source}' or '{abs_source}'.")
+
+        return f"Documents from source '{source}' have been cleared from the vector store. deleted={deleted_any}"
     
     def clear_document(self):
         return self.vector_store.reset_collection()
