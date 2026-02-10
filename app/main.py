@@ -4,10 +4,10 @@ from contextlib import asynccontextmanager
 from functools import lru_cache 
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 import shutil
-from services.document_ingester import Ingester
-from services.retriever import Retriever
-from services.generation import Generation
-from services.database import Database
+from app.services.document_ingester import Ingester
+from app.services.retriever import Retriever
+from app.services.generation import Generation
+from app.services.database import Database
 from pydantic import BaseModel
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
