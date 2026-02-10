@@ -7,8 +7,12 @@ import os
 class Generation:
     def __init__(self):
         load_dotenv()
-        self.GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
-        self.llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", temperature=0.7)
+        self.google_api_key = os.getenv("GOOGLE_API_KEY")
+        self.llm = ChatGoogleGenerativeAI(
+            model=os.getenv("GEMINI_MODEL", "gemini-2.0-flash-lite"), 
+            temperature=0.7,
+            google_api_key=self.google_api_key
+        )
 
     def generate_response(self, prompt: str, content:str, history:str) -> str:
         template="""Answer the following question based on this context:
@@ -59,6 +63,6 @@ We encourage everyone to propose or implement additional features and models, an
 In the final pipeline stage, Docling assembles all prediction results produced on each page into a well-defined datatype that encapsulates a converted document, as defined in the auxiliary package docling-core . The generated document object is passed through a post-processing model which leverages several algorithms to augment features, such as detection of the document language, correcting the reading order, matching figures with captions and labelling metadata such as title, authors and references. The final output can then be serialized to JSON or transformed into a Markdown representation at the users request.
 --------------------------------------------------"""
     sample_question = "How does the OCR work in Docling?"
-    response = generator.generate_response(sample_question, sample_context)
+    response = generator.generate_response(sample_question, sample_context, history="")
     print("Generated Response:")
     print(response)

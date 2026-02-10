@@ -49,13 +49,18 @@ Provide these alternative questions separated by newlines. Original question: {q
         for tq in transformed_queries:
             chunks = self._retrieve_chunks(tq)
             for chunk in chunks:
-                if chunk not in all_retrieved_chunks:
+                if chunk.page_content not in [c.page_content for c in all_retrieved_chunks]:
                     all_retrieved_chunks.append(chunk)
             
-        context=""
+        context = ""
+        citations = []
         for idx, doc in enumerate(all_retrieved_chunks):
-            context+=(f"Context {idx+1}:\n{doc.page_content}\n{'-'*50}\n")
-        return context
+            source = os.path.basename(doc.metadata.get("source", "Unknown"))
+            context += (f"Context {idx+1} (Source: {source}):\n{doc.page_content}\n{'-'*50}\n")
+            if source not in citations:
+                citations.append(source)
+                
+        return {"context": context, "citations": citations}
 
 if __name__ == "__main__":
     retriever_instance = Retriever()

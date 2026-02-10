@@ -30,6 +30,7 @@ class Ingester:
         converted=self.converter.convert(source=source_path).document
         chunks= self.chunker.chunk(dl_doc=converted)
         lc_docs= [Document(page_content=chunk.text,metadata={"source": str(source_path.resolve())}) for chunk in chunks]
+        self.logger.info(f"Ingesting {len(lc_docs)} chunks from document '{source_path}' into the vector store.")
         self.vector_store.add_documents(documents=lc_docs)
     
     def delete_document(self,source: str):

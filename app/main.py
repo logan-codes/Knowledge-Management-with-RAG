@@ -154,6 +154,6 @@ class ChatRequest(BaseModel):
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest, retriever: Retriever = Depends(get_retriever), generator: Generation = Depends(get_generator)):
     logger.info(f"Chat request received", extra={"extra": {"question_length": len(request.question)}})
-    context = retriever.retrieve_context(request.question)
-    response = generator.generate_response(request.question, context, request.history)
-    return {"response": response}
+    retrieval_data = retriever.retrieve_context(request.question)
+    response = generator.generate_response(request.question, retrieval_data["context"], request.history)
+    return {"response": response, "citations": retrieval_data["citations"]}
