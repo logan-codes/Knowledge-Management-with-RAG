@@ -89,9 +89,11 @@ else:
         filename, status, timestamp, path = doc
 
         cols = st.columns([3, 2, 2, 1])
-
+        status_color = "green" if status == "ingested" else "orange"
+        status_display = f"✅ {status.capitalize()}" if status == "ingested" else f"⏳ {status.capitalize()}"
+        status_markdown = f"<span style='color:{status_color}'>{status_display}</span>"
         cols[0].write(filename)
-        cols[1].write(status)
+        cols[1].markdown(status_markdown, unsafe_allow_html=True)
         cols[2].write(timestamp)
 
         if cols[3].button(

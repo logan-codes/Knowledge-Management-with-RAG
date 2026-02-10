@@ -9,7 +9,13 @@ API_URL = os.getenv("API_URL", "http://localhost:8000/")
 
 
 st.set_page_config(page_title="Chat App", page_icon="💬")
-st.title("💬 Chat Interface")
+col_title, col_btn = st.columns([0.8, 0.2])
+with col_title:
+    st.title("💬 Chat Interface")
+with col_btn:
+    if st.button("Clear Chat History"):
+        st.session_state.messages = []
+        st.rerun()
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
