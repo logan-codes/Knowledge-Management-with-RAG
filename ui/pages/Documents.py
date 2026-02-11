@@ -1,15 +1,21 @@
 import streamlit as st
 import requests
 import os
-import pandas as pd
+import sys
 from dotenv import load_dotenv
+
+# Add parent directory to path to import utils
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from utils import load_css
 
 load_dotenv()
 
 API_URL = os.getenv("API_URL", "http://localhost:8000/")
 
-st.set_page_config(page_title="Documents", page_icon="📄")
-st.title("📄 Document Management")
+st.set_page_config(page_title="Documents", page_icon="📄", layout="wide")
+load_css()
+
+st.markdown('<h1 class="gradient-text">📄 Document Management</h1>', unsafe_allow_html=True)
 
 def fetch_documents():
     try:
@@ -37,15 +43,22 @@ def delete_document(name):
         return None
     return res
 
+# Upload Section
 st.subheader("📤 Upload Document")
+st.markdown("""
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; border: 1px dashed rgba(255, 255, 255, 0.2); margin-bottom: 20px;">
+        <p style="margin: 0; color: #aaa;">Supported formats: PDF, DOCX, TXT</p>
+    </div>
+""", unsafe_allow_html=True)
 
 uploaded_file = st.file_uploader(
     "Choose a file",
-    type=["pdf", "docx", "txt"]
+    type=["pdf", "docx", "txt"],
+    label_visibility="collapsed"
 )
 
 if uploaded_file:
-    if st.button("Upload and Ingest"):
+    if st.button("Upload and Ingest", type="primary"):
         with st.spinner("Uploading and ingesting document..."):
             res = upload_document(uploaded_file)
 
@@ -58,12 +71,16 @@ if uploaded_file:
 
 st.divider()
 
+# Documents List
 st.subheader("📄 Available Documents")
 
-search_query = st.text_input(   
-    "",
-    placeholder="🔍 Search documents"
-)
+search_col, _ = st.columns([1, 1])
+with search_col:
+    search_query = st.text_input(   
+        "",
+        placeholder="🔍 Search documents...",
+        label_visibility="collapsed"
+    )
 
 with st.spinner("Fetching documents..."):
     documents = fetch_documents()
@@ -73,41 +90,45 @@ if search_query:
         doc for doc in documents
         if search_query.lower() in doc[0].lower()
     ]
+
 if not documents:
     st.info("No documents available.")
 else:
-    # Table header
-    header_cols = st.columns([3, 2, 2, 1])
-    header_cols[0].markdown("**Filename**")
-    header_cols[1].markdown("**Status**")
-    header_cols[2].markdown("**Uploaded At**")
-    header_cols[3].markdown("**Actions**")
-
-    st.divider()
+    # Header
+    st.markdown("""
+        <div style="display: flex; font-weight: bold; color: #e0e0e0; padding: 10px 0; border-bottom: 2px solid rgba(67, 97, 238, 0.5); background: rgba(0,0,0,0.2); margin-bottom: 10px;">
+            <div style="flex: 3; padding-left: 10px;">Filename</div>
+            <div style="flex: 2;">Status</div>
+            <div style="flex: 2;">Uploaded At</div>
+            <div style="flex: 1; text-align: right; padding-right: 10px;">Actions</div>
+        </div>
+    """, unsafe_allow_html=True)
 
     for idx, doc in enumerate(documents):
         filename, status, timestamp, path = doc
-
-        cols = st.columns([3, 2, 2, 1])
-        status_color = "green" if status == "ingested" else "orange"
+        
+        status_class = "status-ingested" if status == "ingested" else "status-pending"
         status_display = f"✅ {status.capitalize()}" if status == "ingested" else f"⏳ {status.capitalize()}"
-        status_markdown = f"<span style='color:{status_color}'>{status_display}</span>"
-        cols[0].write(filename)
-        cols[1].markdown(status_markdown, unsafe_allow_html=True)
-        cols[2].write(timestamp)
 
-        if cols[3].button(
-            "Delete",
-            key=f"delete_{idx}",
-            type="secondary"
-        ):
-            with st.spinner("Deleting document..."):
-                res = delete_document(path)
-
-                if res is None:
-                    pass
-                elif res.status_code == 200:
-                    st.success(f"✅ Deleted `{filename}`")
-                    st.rerun()
-                else:
-                    st.error("❌ Failed to delete document")
+        col1, col2, col3, col4 = st.columns([3, 2, 2, 1])
+        
+        with col1:
+            st.markdown(f"<div style='padding-top: 5px; padding-left: 10px;'>{filename}</div>", unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown(f"<span class='status-badge {status_class}'>{status_display}</span>", unsafe_allow_html=True)
+            
+        with col3:
+            st.markdown(f"<div style='padding-top: 5px; color: #aaa;'>{timestamp}</div>", unsafe_allow_html=True)
+            
+        with col4:
+            if st.button("🗑️", key=f"delete_{idx}", help="Delete Document"):
+                with st.spinner("Deleting..."):
+                    res = delete_document(path)
+                    if res and res.status_code == 200:
+                        st.success(f"Deleted {filename}")
+                        st.rerun()
+                    else:
+                        st.error("Failed to delete")
+        
+        st.markdown("<hr style='margin: 5px 0; border-color: rgba(255,255,255,0.05);'>", unsafe_allow_html=True)
